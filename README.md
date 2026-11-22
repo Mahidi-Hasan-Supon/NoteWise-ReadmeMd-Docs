@@ -1,150 +1,149 @@
-NoteWise Frontend
-AI Study Companion: the web client built with Next.js and TypeScript
-Overview
-NoteWise lets students store notes and PDFs, then study with AI: summaries, quizzes, flashcards, a chatbot over their own notes (RAG), semantic search and a personalized study plan. This repository is the frontend. It talks to the NoteWise backend over a REST API and keeps all secrets on the server.
-• Live URL: https://notewise.vercel.app (update after deploy)
-• Backend repo: <link to backend repo>
+NoteWise: Frontend
+
+NoteWise is an AI-powered study companion. Students store notes and PDFs, then use AI to summarize them, generate quizzes and flashcards, chat with their own notes (RAG), search by meaning, and get a personalized study plan.
+
+This repository is the frontend (Next.js). The API lives in the backend repository.
+
+Live: https://your-app.vercel.app
+Backend API: https://your-api.onrender.com
 Tech Stack
-Area
-Technology
-Why
-Framework
-Next.js (App Router)
-Routing, layouts, route groups for public, student and admin areas
-Language
-TypeScript
-Type safety across components, hooks and API types
-Styling
-Tailwind CSS
-Utility-first, responsive and dark mode with the dark: class
-UI components
-shadcn/ui (Radix UI)
-Accessible Card, Dialog, Select, Tabs, Table and Form primitives
-Server state
-TanStack Query
-Caching, loading and error states, refetch after mutations
-API client
-ofetch
-Small fetch wrapper with base URL, interceptors and typed errors
-Forms
-React Hook Form
-Fast form state handling
-Validation
-Zod + @hookform/resolvers
-One schema for form validation and TypeScript types
-Client state
-Zustand
-Light global state (current user, UI preferences)
-Google login
-@react-oauth/google
-Google sign-in button, returns an ID token for the backend to verify
-Theme
-next-themes
-Light and dark mode
-Editor
-Tiptap
-Rich text note editor
-Charts
-Recharts
-Dashboard charts
-Animation
-Framer Motion
-Flashcard flip, page transitions
-Icons and toasts
-lucide-react, sonner
-Icons, success and error notifications
-Testing
-Vitest, Playwright
-Component tests and end-to-end tests
-Deployment
-Vercel
-Git-based deploys with preview URLs
-Features (Student area)
-• Auth: register, login, logout, Google login, profile, theme switch
-• Subjects and notes with search, tags, filters and pagination
-• PDF upload, bookmarks
-• Flashcards, quizzes, attempt history
-• AI: summary, quiz and flashcard generation, RAG chat, semantic search, study plan
-• Study goals and a read-only dashboard with charts
-• Admin dashboard: users, roles, content, analytics
-Every data page handles loading, empty, error and success states.
-Routes
-Route
-Access
-/, /login, /register, /forgot-password, /verify-email
-Public
-/dashboard, /subjects, /notes, /flashcards, /quizzes, /chat, /search, /planner, /bookmarks, /profile
+Core
+Technology	Purpose
+Next.js (App Router)	Framework: routing, layouts, SSR/CSR
+TypeScript	Type safety across the app
+Node.js	Runtime for dev server and build
+UI and Styling
+Technology	Purpose
+Tailwind CSS	Utility-first styling, responsive layouts, dark mode
+shadcn/ui (Radix UI)	Accessible, reusable UI components (Button, Card, Dialog, Select...)
+next-themes	Light / dark mode
+lucide-react	Icons
+Framer Motion	Animations (flashcard flip, transitions)
+Recharts	Dashboard charts
+Tiptap	Rich text note editor
+Data, Forms and State
+Technology	Purpose
+ofetch	HTTP client for talking to the backend API
+TanStack Query	Server state: fetching, caching, mutations, loading/error states
+React Hook Form	Form state and performance
+Zod	Schema validation (forms and API responses)
+@hookform/resolvers	Connects Zod to React Hook Form
+Zustand	Small client-side state (current user, UI state)
+Testing and Deployment
+Technology	Purpose
+Vitest + Testing Library	Unit and component tests
+Playwright	End-to-end tests
+Vercel	Hosting and CI/CD
+Features
+
+Public (Guest)
+
+Landing page with feature cards
+Register, Login, Google sign-in, Forgot/Reset password, Email verification
+Clicking a feature card sends a guest to /login?redirect=<page> and returns them after login
+
 Student
-/admin/*
+
+Dashboard: stats, quiz score chart, weak topics, goal progress, today's plan (view only)
+Subjects and Notes (rich editor, tags, search, filter, pagination, bookmark)
+PDF upload
+Flashcards and Quizzes (manual and AI generated), attempt history
+AI: summary, quiz/flashcard generation, chat with notes (RAG), semantic search, study plan
+Study goals and planner
+Profile and theme settings
+
 Admin
-A guest who clicks a feature card is sent to /login?redirect=/target and returned to that page after login. Route guards only improve the experience. The real protection lives in the backend.
-Project Structure
+
+Users and roles, content moderation, analytics, activity monitoring
+Folder Structure
 src/
   app/
-    (public)/      landing, login, register
-    (student)/     dashboard, subjects, notes, quizzes, chat ...
-    (admin)/       admin pages
+    (public)/        landing, login, register, forgot-password
+    (student)/       dashboard, subjects, notes, flashcards, quizzes,
+                     chat, search, planner, bookmarks, profile
+    (admin)/admin/   users, content, analytics
+    layout.tsx
   components/
-    ui/            shadcn components
-    shared/        navbar, sidebar, empty state, loaders
-    features/      SubjectCard, NoteForm, QuizPlayer ...
-  hooks/           useSubjects, useNotes, useCreateNote ...
-  lib/             api client (ofetch), utils, constants
-  store/           Zustand stores
-  schemas/         Zod schemas
-  types/           shared TypeScript types
-Environment Variables
-Create .env.local (never commit it):
-NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
-Only values prefixed with NEXT_PUBLIC_ reach the browser. No AI or database keys belong in this repo.
-API Communication
-All requests go through one ofetch instance in lib/api.ts:
-import { ofetch } from "ofetch";
-
-export const api = ofetch.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  credentials: "include", // send the HTTP-only auth cookies
-});
-• JWT tokens live in HTTP-only cookies set by the backend, so the frontend never reads or stores tokens.
-• On a 401, the client calls the refresh endpoint once, then retries the request.
-• TanStack Query hooks wrap every API call (useQuery for reads, useMutation for writes) and invalidate the related query keys after a mutation.
-Forms
-Every form uses React Hook Form with a Zod schema:
-const form = useForm<NoteInput>({ resolver: zodResolver(noteSchema) });
-The same rules also exist in the backend, so invalid data is rejected on both sides.
+    ui/              shadcn/ui components
+    shared/          Navbar, Sidebar, EmptyState, ErrorState, Loader
+    features/        subjects/, notes/, quizzes/, ai/ ...
+  hooks/             useSubjects, useNotes, useCreateNote ...
+  lib/
+    api.ts           ofetch instance (baseURL, credentials, error handling)
+    utils.ts
+  store/             Zustand stores
+  schemas/           Zod schemas (shared form validation)
+  types/             TypeScript types
+  middleware.ts      route protection
 Getting Started
-git clone <repo-url>
+Prerequisites
+Node.js 20+
+The backend running locally or a deployed API URL
+Setup
+bash
+git clone https://github.com/<your-username>/notewise-frontend.git
 cd notewise-frontend
 npm install
 cp .env.example .env.local
 npm run dev
-The app runs at http://localhost:3000. Start the backend first.
+
+Open http://localhost:3000.
+
+Environment Variables
+
+Create .env.local (never commit it):
+
+env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
 Scripts
-Command
-Purpose
-npm run dev
-Start the dev server
-npm run build
-Production build
-npm run start
-Run the production build
-npm run lint
-ESLint
-npm run test
-Vitest
-npm run test:e2e
-Playwright
+Command	Description
+npm run dev	Start dev server
+npm run build	Production build
+npm run start	Run production build
+npm run lint	Lint code
+npm run test	Run Vitest
+npm run test:e2e	Run Playwright
+API Integration
+
+All requests go through one ofetch instance with credentials: "include" so the HTTP-only auth cookies are sent automatically.
+
+ts
+// src/lib/api.ts
+import { ofetch } from "ofetch";
+
+export const api = ofetch.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  credentials: "include",
+});
+
+Data fetching uses TanStack Query hooks. Every page handles loading, empty, success and error states.
+
+Auth flow
+
+Login: backend sets access and refresh tokens as HTTP-only cookies.
+Each request sends cookies. On 401, the client calls /auth/refresh once, then retries.
+Protected routes check the session (GET /users/me) and redirect guests to /login?redirect=....
+Role-based UI hides Admin pages from students. Real enforcement is on the backend.
 Deployment (Vercel)
-1.  Push the repo to GitHub.
-2.  Import it on Vercel, framework preset: Next.js.
-3.  Add NEXT_PUBLIC_API_URL and NEXT_PUBLIC_GOOGLE_CLIENT_ID in Project Settings, Environment Variables.
-4.  Deploy. Each push to main redeploys automatically.
-5.  Add the Vercel URL to the backend CLIENT_URL and CORS allow list, and to the Google OAuth authorised origins.
-Conventions
-• Feature branches (feature/notes) and meaningful commit messages
-• Reusable components and hooks, no unnecessary any
-• Responsive on mobile, tablet and desktop, with light and dark mode
-• Accessible markup (labels, focus states, keyboard support)
+Push the repo to GitHub.
+Import it in Vercel.
+Add the environment variables (NEXT_PUBLIC_API_URL, ...).
+Deploy. Every push to main redeploys automatically.
+
+Cross-domain cookies: the backend must set SameSite=None; Secure cookies and allow the Vercel URL in CORS with credentials enabled.
+
+Quality
+Responsive: desktop, tablet, mobile
+Accessible components (Radix primitives)
+Light and dark mode
+Zod validation on every form
+Tests: Vitest (components), Playwright (key user flows)
+Git Workflow
+Feature branches: feature/notes, feature/auth
+Meaningful commits, for example feat(notes): add subject select to note form
+Pull Requests for major features
+No secrets in the repo (.env* is in .gitignore)
 Author
-Built by <your name> as an individual full-stack project.
+
+Your Name · GitHub · LinkedIn
